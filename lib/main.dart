@@ -4,7 +4,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 
 void main() {
-  OpenFoodAPIConfiguration.userAgent = UserAgent(name: 'Food Scanner');
+  OpenFoodAPIConfiguration.userAgent = UserAgent(
+    name: 'Food Scanner',
+    version: '1.0.0',
+    comment: 'demo app for 42 The Flutter Multiverse',
+    system: "Flutter",
+    url: 'localhost',
+  );
 
   OpenFoodAPIConfiguration.globalLanguages = <OpenFoodFactsLanguage>[
     OpenFoodFactsLanguage.ENGLISH,
@@ -14,4 +20,3 @@ void main() {
 
   runApp(const ProviderScope(child: FoodScannerApp()));
 }
-

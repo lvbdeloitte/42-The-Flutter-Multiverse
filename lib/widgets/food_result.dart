@@ -1,4 +1,5 @@
 import 'package:_42_the_flutter_multiverse/providers/food_provider.dart';
+import 'package:_42_the_flutter_multiverse/providers/history_provider.dart';
 import 'package:_42_the_flutter_multiverse/widgets/empty_state.dart';
 import 'package:_42_the_flutter_multiverse/widgets/product_card.dart';
 import 'package:flutter/material.dart';
@@ -15,7 +16,19 @@ class FoodResult extends ConsumerWidget {
       AsyncData(:final value) =>
         value == null
             ? const EmptyState()
-            : ProductCard(product: value.product),
+            : Builder(
+                builder: (context) {
+                  // Add to history when product is successfully loaded
+                  if (value.product != null) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      ref
+                          .read(historyProvider.notifier)
+                          .addProduct(value.product!);
+                    });
+                  }
+                  return ProductCard(product: value.product);
+                },
+              ),
       AsyncError(:final error) => Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
