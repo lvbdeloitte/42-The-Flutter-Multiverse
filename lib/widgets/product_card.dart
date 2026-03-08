@@ -118,6 +118,30 @@ class ProductCard extends ConsumerWidget {
                 value:
                     '${product!.nutriments?.getValue(Nutrient.salt, PerSize.oneHundredGrams) ?? 'N/A'} g',
               ),
+              DetailRow(
+                icon: Icons.cookie,
+                label: 'Sugar (per 100g)',
+                value:
+                    '${product!.nutriments?.getValue(Nutrient.sugars, PerSize.oneHundredGrams) ?? 'N/A'} g',
+              ),
+              DetailRow(
+                icon: Icons.water_drop,
+                label: 'Saturated Fat (per 100g)',
+                value:
+                    '${product!.nutriments?.getValue(Nutrient.saturatedFat, PerSize.oneHundredGrams) ?? 'N/A'} g',
+              ),
+              DetailRow(
+                icon: Icons.fitness_center,
+                label: 'Protein (per 100g)',
+                value:
+                    '${product!.nutriments?.getValue(Nutrient.proteins, PerSize.oneHundredGrams) ?? 'N/A'} g',
+              ),
+              DetailRow(
+                icon: Icons.local_fire_department,
+                label: 'Calories (per 100g)',
+                value:
+                    '${product!.nutriments?.getValue(Nutrient.energyKCal, PerSize.oneHundredGrams) ?? 'N/A'} kcal',
+              ),
 
               if (product!.additives?.names != null &&
                   product!.additives!.names.isNotEmpty) ...[
