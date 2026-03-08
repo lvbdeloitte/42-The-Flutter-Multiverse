@@ -112,36 +112,33 @@ class ProductCard extends ConsumerWidget {
                 label: 'Quantity',
                 value: product!.quantity ?? 'N/A',
               ),
-              DetailRow(
-                icon: Icons.restaurant,
-                label: 'Salt (per 100g)',
-                value:
-                    '${product!.nutriments?.getValue(Nutrient.salt, PerSize.oneHundredGrams) ?? 'N/A'} g',
-              ),
-              DetailRow(
-                icon: Icons.cookie,
-                label: 'Sugar (per 100g)',
-                value:
-                    '${product!.nutriments?.getValue(Nutrient.sugars, PerSize.oneHundredGrams) ?? 'N/A'} g',
-              ),
-              DetailRow(
-                icon: Icons.water_drop,
-                label: 'Saturated Fat (per 100g)',
-                value:
-                    '${product!.nutriments?.getValue(Nutrient.saturatedFat, PerSize.oneHundredGrams) ?? 'N/A'} g',
-              ),
-              DetailRow(
-                icon: Icons.fitness_center,
-                label: 'Protein (per 100g)',
-                value:
-                    '${product!.nutriments?.getValue(Nutrient.proteins, PerSize.oneHundredGrams) ?? 'N/A'} g',
-              ),
-              DetailRow(
-                icon: Icons.local_fire_department,
-                label: 'Calories (per 100g)',
-                value:
-                    '${product!.nutriments?.getValue(Nutrient.energyKCal, PerSize.oneHundredGrams) ?? 'N/A'} kcal',
-              ),
+              // Dynamic nutrient rows (only values > 0)
+              if (product!.nutriments != null)
+                ...Nutrient.values
+                    .where((n) {
+                      final val = product!.nutriments!.getValue(
+                        n,
+                        PerSize.oneHundredGrams,
+                      );
+                      return val != null && val > 0;
+                    })
+                    .map((n) {
+                      final val = product!.nutriments!.getValue(
+                        n,
+                        PerSize.oneHundredGrams,
+                      )!;
+                      final unit = n.typicalUnit.offTag;
+                      final name = n.offTag
+                          .replaceAll('-', ' ')
+                          .split(' ')
+                          .map((w) => w[0].toUpperCase() + w.substring(1))
+                          .join(' ');
+                      return DetailRow(
+                        icon: Icons.circle,
+                        label: '$name (per 100g)',
+                        value: '$val $unit',
+                      );
+                    }),
 
               if (product!.additives?.names != null &&
                   product!.additives!.names.isNotEmpty) ...[
