@@ -63,35 +63,11 @@ class ProductCard extends ConsumerWidget {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  IconButton(
-                    icon: Icon(
-                      ref.watch(
-                            favouritesProvider.select(
-                              (favs) => favs.any(
-                                (p) => p.barcode == product!.barcode,
-                              ),
-                            ),
-                          )
-                          ? Icons.favorite
-                          : Icons.favorite_border,
-                      color:
-                          ref.watch(
-                            favouritesProvider.select(
-                              (favs) => favs.any(
-                                (p) => p.barcode == product!.barcode,
-                              ),
-                            ),
-                          )
-                          ? Colors.red
-                          : null,
-                      size: 28,
-                    ),
-                    onPressed: () {
-                      ref
-                          .read(favouritesProvider.notifier)
-                          .toggleFavourite(product!);
-                    },
-                  ),
+                  // TODO: Add favourite IconButton
+                  // 1. Use ref.watch(favouritesProvider.select(...)) to check if product is favourited
+                  // 2. Show Icons.favorite (red) if favourited, Icons.favorite_border otherwise
+                  // 3. onPressed: call ref.read(favouritesProvider.notifier).toggleFavourite(product!)
+                  const SizedBox(width: 48), // Placeholder for button
                 ],
               ),
               const SizedBox(height: 4),

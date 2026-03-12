@@ -46,14 +46,12 @@ class HistoryNotifier extends StateNotifier<List<HistoryItem>> {
   }
 
   void addProduct(Product product) {
-    final exists = state.any((item) => item.product.barcode == product.barcode);
-    if (!exists) {
-      state = [
-        HistoryItem(product: product, scannedAt: DateTime.now()),
-        ...state,
-      ];
-      _saveHistory();
-    }
+    // TODO: Add product to history
+    // 1. Check if product already exists using state.any((item) => item.product.barcode == product.barcode)
+    // 2. If NOT exists:
+    //    - Create new HistoryItem with product and DateTime.now()
+    //    - Add to beginning of state: state = [newItem, ...state]
+    //    - Call _saveHistory() to persist
   }
 
   void removeProduct(String barcode) {

@@ -18,14 +18,10 @@ class FoodResult extends ConsumerWidget {
             ? const EmptyState()
             : Builder(
                 builder: (context) {
-                  // Add to history when product is successfully loaded
-                  if (value.product != null) {
-                    WidgetsBinding.instance.addPostFrameCallback((_) {
-                      ref
-                          .read(historyProvider.notifier)
-                          .addProduct(value.product!);
-                    });
-                  }
+                  // TODO: Add product to history when successfully loaded
+                  // Use WidgetsBinding.instance.addPostFrameCallback to avoid
+                  // calling setState during build. Inside the callback:
+                  // ref.read(historyProvider.notifier).addProduct(value.product!)
                   return ProductCard(product: value.product);
                 },
               ),
