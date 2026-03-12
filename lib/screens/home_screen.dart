@@ -1,6 +1,8 @@
 import 'package:_42_the_flutter_multiverse/providers/barcode_provider.dart';
+import 'package:_42_the_flutter_multiverse/providers/search_provider.dart';
 import 'package:_42_the_flutter_multiverse/screens/barcode_scanner_screen.dart';
 import 'package:_42_the_flutter_multiverse/widgets/food_result.dart';
+import 'package:_42_the_flutter_multiverse/widgets/search_results.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -15,6 +17,7 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _controller = TextEditingController();
+  bool _showingProduct = false;
 
   @override
   void dispose() {
@@ -22,15 +25,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  void _searchByBarcode() {
+  void _searchByName() {
     if (_controller.text.isNotEmpty) {
-      ref.read(barcodeProvider.notifier).state = _controller.text;
+      setState(() => _showingProduct = false);
+      ref.read(searchQueryProvider.notifier).state = _controller.text;
     }
+  }
+
+  void _selectProduct(String barcode) {
+    setState(() => _showingProduct = true);
+    ref.read(barcodeProvider.notifier).state = barcode;
   }
 
   void _resetProduct() {
     _controller.clear();
+    setState(() => _showingProduct = false);
     ref.read(barcodeProvider.notifier).state = '';
+    ref.read(searchQueryProvider.notifier).state = '';
   }
 
   Future<void> _scanBarcode() async {
@@ -39,7 +50,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     );
 
     if (barcode != null && barcode.isNotEmpty) {
-      _controller.text = barcode;
+      _controller.clear();
+      setState(() => _showingProduct = true);
+      ref.read(searchQueryProvider.notifier).state = '';
       ref.read(barcodeProvider.notifier).state = barcode;
     }
   }
@@ -51,6 +64,14 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
+          if (_showingProduct)
+            IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () {
+                setState(() => _showingProduct = false);
+              },
+              tooltip: 'Back to results',
+            ),
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _resetProduct,
@@ -68,18 +89,19 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   child: TextField(
                     controller: _controller,
                     decoration: InputDecoration(
-                      labelText: 'Enter barcode',
-                      hintText: 'e.g., 3017624010701',
+                      labelText: 'Search product',
+                      hintText: 'e.g., Coca-Cola, Nutella...',
+                      prefixIcon: const Icon(Icons.search),
                       suffixIcon: IconButton(
-                        icon: const Icon(Icons.search),
-                        onPressed: _searchByBarcode,
+                        icon: const Icon(Icons.send),
+                        onPressed: _searchByName,
                       ),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _searchByBarcode(),
+                    onSubmitted: (_) => _searchByName(),
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -96,7 +118,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            const Expanded(child: FoodResult()),
+            Expanded(
+              child: _showingProduct
+                  ? const FoodResult()
+                  : SearchResults(onProductSelected: _selectProduct),
+            ),
           ],
         ),
       ),
