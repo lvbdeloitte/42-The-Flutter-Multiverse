@@ -34,14 +34,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
   }
 
   Future<void> _scanBarcode() async {
-    final String? barcode = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
-    );
-
-    if (barcode != null && barcode.isNotEmpty) {
-      _controller.text = barcode;
-      ref.read(barcodeProvider.notifier).state = barcode;
-    }
+    // TODO: Navigate to BarcodeScannerScreen and get the scanned barcode
+    // 1. Use Navigator.of(context).push<String>(...) to push BarcodeScannerScreen
+    // 2. The scanner returns the barcode as a String? when it pops
+    // 3. If barcode is not null and not empty:
+    //    - Set _controller.text = barcode
+    //    - Update barcodeProvider.notifier.state with the barcode
   }
 
   @override
