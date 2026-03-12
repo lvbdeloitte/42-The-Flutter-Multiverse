@@ -17,7 +17,8 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _controller = TextEditingController();
-  bool _showingProduct = false;
+  // TODO: Add a bool _showingProduct = false to track whether
+  // we're showing the single product view or the search results list
 
   @override
   void dispose() {
@@ -25,23 +26,20 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  void _searchByName() {
-    if (_controller.text.isNotEmpty) {
-      setState(() => _showingProduct = false);
-      ref.read(searchQueryProvider.notifier).state = _controller.text;
-    }
-  }
+  // TODO: Implement _searchByName() method that:
+  // - Checks if _controller.text is not empty
+  // - Sets _showingProduct to false (we're showing search results)
+  // - Updates searchQueryProvider with the search text
 
-  void _selectProduct(String barcode) {
-    setState(() => _showingProduct = true);
-    ref.read(barcodeProvider.notifier).state = barcode;
-  }
+  // TODO: Implement _selectProduct(String barcode) method that:
+  // - Sets _showingProduct to true (we're showing a single product)
+  // - Updates barcodeProvider with the selected barcode
 
   void _resetProduct() {
     _controller.clear();
-    setState(() => _showingProduct = false);
+    // TODO: Also reset _showingProduct to false
     ref.read(barcodeProvider.notifier).state = '';
-    ref.read(searchQueryProvider.notifier).state = '';
+    // TODO: Also reset searchQueryProvider to empty string
   }
 
   Future<void> _scanBarcode() async {
@@ -51,8 +49,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
     if (barcode != null && barcode.isNotEmpty) {
       _controller.clear();
-      setState(() => _showingProduct = true);
-      ref.read(searchQueryProvider.notifier).state = '';
+      // TODO: Set _showingProduct to true
+      // TODO: Reset searchQueryProvider to empty string
       ref.read(barcodeProvider.notifier).state = barcode;
     }
   }
@@ -64,14 +62,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
-          if (_showingProduct)
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                setState(() => _showingProduct = false);
-              },
-              tooltip: 'Back to results',
-            ),
+          // TODO: Add a conditional "back" button that shows when _showingProduct is true
+          // When pressed, set _showingProduct to false to return to search results
           IconButton(
             icon: const Icon(Icons.refresh),
             onPressed: _resetProduct,
@@ -92,16 +84,13 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       labelText: 'Search product',
                       hintText: 'e.g., Coca-Cola, Nutella...',
                       prefixIcon: const Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: _searchByName,
-                      ),
+                      // TODO: Add suffixIcon with an IconButton that calls _searchByName
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                       ),
                     ),
                     textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _searchByName(),
+                    // TODO: Update onSubmitted to call _searchByName
                   ),
                 ),
                 const SizedBox(width: 8),
@@ -118,11 +107,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               ],
             ),
             const SizedBox(height: 16),
-            Expanded(
-              child: _showingProduct
-                  ? const FoodResult()
-                  : SearchResults(onProductSelected: _selectProduct),
-            ),
+            // TODO: Replace with conditional rendering:
+            // - If _showingProduct: show FoodResult()
+            // - Otherwise: show SearchResults(onProductSelected: _selectProduct)
+            const Expanded(child: FoodResult()),
           ],
         ),
       ),
