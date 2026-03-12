@@ -18,6 +18,11 @@ class ProductCard extends ConsumerWidget {
     }
 
     final imageUrl = product!.imageFrontUrl ?? product!.imageFrontSmallUrl;
+    final isFavourite = ref.watch(
+      favouritesProvider.select(
+        (favs) => favs.any((p) => p.barcode == product!.barcode),
+      ),
+    );
 
     return SingleChildScrollView(
       child: Card(
@@ -63,11 +68,18 @@ class ProductCard extends ConsumerWidget {
                           ?.copyWith(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  // TODO: Add favourite IconButton
-                  // 1. Use ref.watch(favouritesProvider.select(...)) to check if product is favourited
-                  // 2. Show Icons.favorite (red) if favourited, Icons.favorite_border otherwise
-                  // 3. onPressed: call ref.read(favouritesProvider.notifier).toggleFavourite(product!)
-                  const SizedBox(width: 48), // Placeholder for button
+                  IconButton(
+                    icon: Icon(
+                      isFavourite ? Icons.favorite : Icons.favorite_border,
+                      color: isFavourite ? Colors.red : null,
+                      size: 28,
+                    ),
+                    onPressed: () {
+                      ref
+                          .read(favouritesProvider.notifier)
+                          .toggleFavourite(product!);
+                    },
+                  ),
                 ],
               ),
               const SizedBox(height: 4),

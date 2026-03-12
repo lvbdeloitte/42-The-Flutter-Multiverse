@@ -29,11 +29,12 @@ class FavouritesNotifier extends StateNotifier<List<Product>> {
   }
 
   void toggleFavourite(Product product) {
-    // TODO: Implement toggle favourite
-    // 1. Check if product already exists in state using state.any((p) => p.barcode == product.barcode)
-    // 2. If exists: remove it from state using state.where(...)
-    // 3. If not exists: add it to the beginning of state using [product, ...state]
-    // 4. Call _saveFavourites() to persist
+    final exists = state.any((p) => p.barcode == product.barcode);
+    if (exists) {
+      state = state.where((p) => p.barcode != product.barcode).toList();
+    } else {
+      state = [product, ...state];
+    }
   }
 
   bool isFavourite(String? barcode) {

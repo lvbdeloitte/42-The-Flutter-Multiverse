@@ -16,7 +16,7 @@ void main() {
     OpenFoodFactsLanguage.ENGLISH,
   ];
 
-  OpenFoodAPIConfiguration.globalCountry = OpenFoodFactsCountry.FRANCE;
+  OpenFoodAPIConfiguration.globalCountry = OpenFoodFactsCountry.BELGIUM;
 
   runApp(const ProviderScope(child: FoodScannerApp()));
 }

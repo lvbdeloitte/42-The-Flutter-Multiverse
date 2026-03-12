@@ -1,5 +1,4 @@
 import 'package:_42_the_flutter_multiverse/providers/food_provider.dart';
-import 'package:_42_the_flutter_multiverse/providers/history_provider.dart';
 import 'package:_42_the_flutter_multiverse/widgets/empty_state.dart';
 import 'package:_42_the_flutter_multiverse/widgets/product_card.dart';
 import 'package:flutter/material.dart';
@@ -22,6 +21,13 @@ class FoodResult extends ConsumerWidget {
                   // Use WidgetsBinding.instance.addPostFrameCallback to avoid
                   // calling setState during build. Inside the callback:
                   // ref.read(historyProvider.notifier).addProduct(value.product!)
+                  if (value.product != null) {
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                      print(
+                        'Adding product to history: ${value.product!.productName}',
+                      );
+                    });
+                  }
                   return ProductCard(product: value.product);
                 },
               ),
