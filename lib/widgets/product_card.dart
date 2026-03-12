@@ -1,16 +1,18 @@
+import 'package:_42_the_flutter_multiverse/providers/favourites_provider.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:openfoodfacts/openfoodfacts.dart';
 
 import 'detail_row.dart';
 
-class ProductCard extends StatelessWidget {
+class ProductCard extends ConsumerWidget {
   const ProductCard({super.key, required this.product});
 
   final Product? product;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     if (product == null) {
       return const Center(child: Text('Product not found'));
     }
@@ -50,11 +52,47 @@ class ProductCard extends StatelessWidget {
                 ),
               const SizedBox(height: 16),
 
-              // Product Name
-              Text(
-                product!.productName ?? 'Unknown Product',
-                style: Theme.of(context).textTheme.headlineSmall
-                    ?.copyWith(fontWeight: FontWeight.bold),
+              // Product Name + Like Button
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Text(
+                      product!.productName ?? 'Unknown Product',
+                      style: Theme.of(context).textTheme.headlineSmall
+                          ?.copyWith(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  IconButton(
+                    icon: Icon(
+                      ref.watch(
+                            favouritesProvider.select(
+                              (favs) => favs.any(
+                                (p) => p.barcode == product!.barcode,
+                              ),
+                            ),
+                          )
+                          ? Icons.favorite
+                          : Icons.favorite_border,
+                      color:
+                          ref.watch(
+                            favouritesProvider.select(
+                              (favs) => favs.any(
+                                (p) => p.barcode == product!.barcode,
+                              ),
+                            ),
+                          )
+                          ? Colors.red
+                          : null,
+                      size: 28,
+                    ),
+                    onPressed: () {
+                      ref
+                          .read(favouritesProvider.notifier)
+                          .toggleFavourite(product!);
+                    },
+                  ),
+                ],
               ),
               const SizedBox(height: 4),
 
