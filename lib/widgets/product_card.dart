@@ -26,35 +26,129 @@ class ProductCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // TODO: Display the product image using CachedNetworkImage
-              // - Use ClipRRect with borderRadius: 12 to round corners
-              // - If imageUrl is null, skip this section
-              // - Use placeholder and errorWidget callbacks
+              // Product Image
+              if (imageUrl != null)
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(12),
+                    child: CachedNetworkImage(
+                      imageUrl: imageUrl,
+                      height: 200,
+                      fit: BoxFit.contain,
+                      placeholder: (_, _) => Container(
+                        height: 200,
+                        color: Colors.grey[200],
+                        child: const Center(child: CircularProgressIndicator()),
+                      ),
+                      errorWidget: (_, _, _) => Container(
+                        height: 200,
+                        color: Colors.grey[200],
+                        child: const Icon(Icons.image_not_supported, size: 48),
+                      ),
+                    ),
+                  ),
+                ),
               const SizedBox(height: 16),
 
-              // TODO: Display the product name using Text widget
-              // Use Theme.of(context).textTheme.headlineSmall with bold fontWeight
-              const Placeholder(fallbackHeight: 30),
+              // Product Name
+              Text(
+                product!.productName ?? 'Unknown Product',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
               const SizedBox(height: 4),
 
-              // TODO: Display the brand if product!.brands is not null
-              // Use Theme.of(context).textTheme.titleMedium with primary color
+              // Brand
+              if (product!.brands != null)
+                Text(
+                  product!.brands!,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                    color: Theme.of(context).colorScheme.primary,
+                  ),
+                ),
               const Divider(height: 24),
 
-              // TODO: Display product quantity using DetailRow widget
-              // DetailRow(icon: Icons.scale, label: 'Quantity', value: ...)
-              const Placeholder(fallbackHeight: 24),
+              // Details
+              DetailRow(
+                icon: Icons.scale,
+                label: 'Quantity',
+                value: product!.quantity ?? 'N/A',
+              ),
+              // Dynamic nutrient rows (only values > 0)
+              if (product!.nutriments != null)
+                ...Nutrient.values
+                    .where((n) {
+                      final val = product!.nutriments!.getValue(
+                        n,
+                        PerSize.oneHundredGrams,
+                      );
+                      return val != null && val > 0;
+                    })
+                    .map((n) {
+                      final val = product!.nutriments!.getValue(
+                        n,
+                        PerSize.oneHundredGrams,
+                      )!;
+                      final unit = n.typicalUnit.offTag;
+                      final name = n.offTag
+                          .replaceAll('-', ' ')
+                          .split(' ')
+                          .map((w) => w[0].toUpperCase() + w.substring(1))
+                          .join(' ');
+                      return DetailRow(
+                        icon: Icons.circle,
+                        label: '$name (per 100g)',
+                        value: '$val $unit',
+                      );
+                    }),
 
-              // TODO: Loop through Nutrient.values and display each non-zero nutrient
-              // Filter with: val != null && val > 0
-              // Use product!.nutriments!.getValue(nutrient, PerSize.oneHundredGrams)
-              // Display each as a DetailRow
+              if (product!.additives?.names != null &&
+                  product!.additives!.names.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Additives',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: product!.additives!.names
+                      .map(
+                        (e) => Chip(
+                          label: Text(e, style: const TextStyle(fontSize: 12)),
+                          padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
 
-              // TODO: Display additives as Chips if product!.additives?.names is not empty
-              // Use Wrap widget with spacing: 6, runSpacing: 6
-
-              // TODO: Display allergens as Chips if product!.allergens?.names is not empty
-              // Use orange background color for allergen chips
+              if (product!.allergens?.names != null &&
+                  product!.allergens!.names.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Text(
+                  'Allergens',
+                  style: Theme.of(context).textTheme.titleSmall,
+                ),
+                const SizedBox(height: 4),
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: product!.allergens!.names
+                      .map(
+                        (e) => Chip(
+                          label: Text(e, style: const TextStyle(fontSize: 12)),
+                          backgroundColor: Colors.orange[100],
+                          padding: EdgeInsets.zero,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      )
+                      .toList(),
+                ),
+              ],
             ],
           ),
         ),

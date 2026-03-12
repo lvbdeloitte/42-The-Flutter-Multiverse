@@ -19,13 +19,14 @@ class _BarcodeScannerScreenState extends State<BarcodeScannerScreen> {
   }
 
   void _onDetect(BarcodeCapture capture) {
-    // TODO: Implement barcode detection
-    // 1. Return early if _hasScanned is true (prevent multiple scans)
-    // 2. Get the list of barcodes from capture.barcodes
-    // 3. If barcodes is not empty and first barcode's rawValue is not null:
-    //    - Set _hasScanned = true
-    //    - Get the barcode string from barcodes.first.rawValue!
-    //    - Call Navigator.of(context).pop(barcode) to return the value
+    if (_hasScanned) return;
+
+    final List<Barcode> barcodes = capture.barcodes;
+    if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
+      _hasScanned = true;
+      final String barcode = barcodes.first.rawValue!;
+      Navigator.of(context).pop(barcode);
+    }
   }
 
   @override
