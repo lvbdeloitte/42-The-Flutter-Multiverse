@@ -1,8 +1,8 @@
 import 'package:_42_the_flutter_multiverse/providers/barcode_provider.dart';
-import 'package:_42_the_flutter_multiverse/providers/food_provider.dart';
+import 'package:_42_the_flutter_multiverse/screens/barcode_scanner_screen.dart';
+import 'package:_42_the_flutter_multiverse/widgets/food_result.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:openfoodfacts/openfoodfacts.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -28,84 +28,75 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     }
   }
 
+  void _resetProduct() {
+    _controller.clear();
+    ref.read(barcodeProvider.notifier).state = '';
+  }
+
+  Future<void> _scanBarcode() async {
+    final String? barcode = await Navigator.of(context).push<String>(
+      MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
+    );
+
+    if (barcode != null && barcode.isNotEmpty) {
+      _controller.text = barcode;
+      ref.read(barcodeProvider.notifier).state = barcode;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final foodDetails = ref.watch(getFoodDetailsProvider);
-
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _resetProduct,
+            tooltip: 'Reset',
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextField(
-              controller: _controller,
-              decoration: InputDecoration(
-                labelText: 'Enter barcode',
-                hintText: 'e.g., 3017624010701',
-                suffixIcon: IconButton(
-                  icon: const Icon(Icons.search),
-                  onPressed: _searchByBarcode,
-                ),
-                border: const OutlineInputBorder(),
-              ),
-              textInputAction: TextInputAction.search,
-              onSubmitted: (_) => _searchByBarcode(),
-            ),
-            const SizedBox(height: 24),
-            Expanded(
-              child: switch (foodDetails) {
-                AsyncData(:final value) => value?.product != null
-                    ? SingleChildScrollView(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Product: ${value!.product!.productName ?? "N/A"}',
-                              style: Theme.of(context).textTheme.titleLarge,
-                            ),
-                            const SizedBox(height: 8),
-                            Text('Brand: ${value.product!.brands ?? "N/A"}'),
-                            Text('Barcode: ${value.product!.barcode ?? "N/A"}'),
-                            Text('Quantity: ${value.product!.quantity ?? "N/A"}'),
-                            if (value.product!.nutriments != null) ...[
-                              const SizedBox(height: 16),
-                              Text(
-                                'Nutrition (per 100g):',
-                                style: Theme.of(context).textTheme.titleMedium,
-                              ),
-                              Text(
-                                'Energy: ${value.product!.nutriments!.getValue(Nutrient.energyKCal, PerSize.oneHundredGrams) ?? "N/A"} kcal',
-                              ),
-                              Text(
-                                'Fat: ${value.product!.nutriments!.getValue(Nutrient.fat, PerSize.oneHundredGrams) ?? "N/A"} g',
-                              ),
-                              Text(
-                                'Carbs: ${value.product!.nutriments!.getValue(Nutrient.carbohydrates, PerSize.oneHundredGrams) ?? "N/A"} g',
-                              ),
-                              Text(
-                                'Proteins: ${value.product!.nutriments!.getValue(Nutrient.proteins, PerSize.oneHundredGrams) ?? "N/A"} g',
-                              ),
-                              Text(
-                                'Salt: ${value.product!.nutriments!.getValue(Nutrient.salt, PerSize.oneHundredGrams) ?? "N/A"} g',
-                              ),
-                            ],
-                          ],
-                        ),
-                      )
-                    : const Center(
-                        child: Text('Enter a barcode to search for a product'),
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: _controller,
+                    decoration: InputDecoration(
+                      labelText: 'Enter barcode',
+                      hintText: 'e.g., 3017624010701',
+                      suffixIcon: IconButton(
+                        icon: const Icon(Icons.search),
+                        onPressed: _searchByBarcode,
                       ),
-                AsyncError(:final error) => Center(
-                    child: Text('Error: $error'),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    textInputAction: TextInputAction.search,
+                    onSubmitted: (_) => _searchByBarcode(),
                   ),
-                _ => const Center(child: CircularProgressIndicator()),
-              },
+                ),
+                const SizedBox(width: 8),
+                FilledButton.tonal(
+                  onPressed: _scanBarcode,
+                  style: FilledButton.styleFrom(
+                    padding: const EdgeInsets.all(16),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Icon(Icons.camera_alt, size: 28),
+                ),
+              ],
             ),
+            const SizedBox(height: 16),
+            const Expanded(child: FoodResult()),
           ],
         ),
       ),

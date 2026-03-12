@@ -25,7 +25,13 @@ void main() {
     expect(find.byType(TextField), findsOneWidget);
 
     // Verify that the empty state message is shown.
-    expect(find.text('Enter a barcode to search for a product'), findsOneWidget);
+    expect(find.text('Enter a barcode to search'), findsOneWidget);
+
+    // Verify that the reset button is present.
+    expect(find.byIcon(Icons.refresh), findsOneWidget);
+
+    // Verify that the camera button is present.
+    expect(find.byIcon(Icons.camera_alt), findsOneWidget);
 
     // Verify that the search icon is present.
     expect(find.byIcon(Icons.search), findsOneWidget);
