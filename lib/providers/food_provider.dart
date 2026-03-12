@@ -9,6 +9,13 @@ import 'barcode_provider.dart';
 // 3. Create a ProductQueryConfiguration with the barcode and version: ProductQueryVersion.v3
 // 4. Call OpenFoodAPIClient.getProductV3(config) and return the result
 final getFoodDetailsProvider = FutureProvider<ProductResultV3?>((ref) async {
-  // Your code here (~8 lines)
-  return null;
+  final barcode = ref.watch(barcodeProvider);
+  if (barcode.isEmpty) return null;
+
+  ProductQueryConfiguration config = ProductQueryConfiguration(
+    '',
+    version: ProductQueryVersion.v3,
+  );
+  ProductResultV3 product = await OpenFoodAPIClient.getProductV3(config);
+  return product;
 });
