@@ -1,10 +1,8 @@
 import 'package:_42_the_flutter_multiverse/providers/barcode_provider.dart';
-import 'package:_42_the_flutter_multiverse/providers/search_provider.dart';
-import 'package:_42_the_flutter_multiverse/screens/barcode_scanner_screen.dart';
-import 'package:_42_the_flutter_multiverse/widgets/food_result.dart';
-import 'package:_42_the_flutter_multiverse/widgets/search_results.dart';
+import 'package:_42_the_flutter_multiverse/providers/food_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:openfoodfacts/openfoodfacts.dart';
 
 class HomeScreen extends ConsumerStatefulWidget {
   const HomeScreen({super.key, required this.title});
@@ -17,7 +15,6 @@ class HomeScreen extends ConsumerStatefulWidget {
 
 class _HomeScreenState extends ConsumerState<HomeScreen> {
   final _controller = TextEditingController();
-  bool _showingProduct = false;
 
   @override
   void dispose() {
@@ -25,103 +22,89 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     super.dispose();
   }
 
-  void _searchByName() {
+  void _searchByBarcode() {
     if (_controller.text.isNotEmpty) {
-      setState(() => _showingProduct = false);
-      ref.read(searchQueryProvider.notifier).state = _controller.text;
-    }
-  }
-
-  void _selectProduct(String barcode) {
-    setState(() => _showingProduct = true);
-    ref.read(barcodeProvider.notifier).state = barcode;
-  }
-
-  void _resetProduct() {
-    _controller.clear();
-    setState(() => _showingProduct = false);
-    ref.read(barcodeProvider.notifier).state = '';
-    ref.read(searchQueryProvider.notifier).state = '';
-  }
-
-  Future<void> _scanBarcode() async {
-    final String? barcode = await Navigator.of(context).push<String>(
-      MaterialPageRoute(builder: (context) => const BarcodeScannerScreen()),
-    );
-
-    if (barcode != null && barcode.isNotEmpty) {
-      _controller.clear();
-      setState(() => _showingProduct = true);
-      ref.read(searchQueryProvider.notifier).state = '';
-      ref.read(barcodeProvider.notifier).state = barcode;
+      ref.read(barcodeProvider.notifier).state = _controller.text;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final foodDetails = ref.watch(getFoodDetailsProvider);
+
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
-        actions: [
-          if (_showingProduct)
-            IconButton(
-              icon: const Icon(Icons.arrow_back),
-              onPressed: () {
-                setState(() => _showingProduct = false);
-              },
-              tooltip: 'Back to results',
-            ),
-          IconButton(
-            icon: const Icon(Icons.refresh),
-            onPressed: _resetProduct,
-            tooltip: 'Reset',
-          ),
-        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Row(
-              children: [
-                Expanded(
-                  child: TextField(
-                    controller: _controller,
-                    decoration: InputDecoration(
-                      labelText: 'Search product',
-                      hintText: 'e.g., Coca-Cola, Nutella...',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        icon: const Icon(Icons.send),
-                        onPressed: _searchByName,
-                      ),
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                    ),
-                    textInputAction: TextInputAction.search,
-                    onSubmitted: (_) => _searchByName(),
-                  ),
+            TextField(
+              controller: _controller,
+              decoration: InputDecoration(
+                labelText: 'Enter barcode',
+                hintText: 'e.g., 3017624010701',
+                suffixIcon: IconButton(
+                  icon: const Icon(Icons.search),
+                  onPressed: _searchByBarcode,
                 ),
-                const SizedBox(width: 8),
-                FilledButton.tonal(
-                  onPressed: _scanBarcode,
-                  style: FilledButton.styleFrom(
-                    padding: const EdgeInsets.all(16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                  ),
-                  child: const Icon(Icons.camera_alt, size: 28),
-                ),
-              ],
+                border: const OutlineInputBorder(),
+              ),
+              textInputAction: TextInputAction.search,
+              onSubmitted: (_) => _searchByBarcode(),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 24),
             Expanded(
-              child: _showingProduct
-                  ? const FoodResult()
-                  : SearchResults(onProductSelected: _selectProduct),
+              child: switch (foodDetails) {
+                AsyncData(:final value) => value?.product != null
+                    ? SingleChildScrollView(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Product: ${value!.product!.productName ?? "N/A"}',
+                              style: Theme.of(context).textTheme.titleLarge,
+                            ),
+                            const SizedBox(height: 8),
+                            Text('Brand: ${value.product!.brands ?? "N/A"}'),
+                            Text('Barcode: ${value.product!.barcode ?? "N/A"}'),
+                            Text('Quantity: ${value.product!.quantity ?? "N/A"}'),
+                            if (value.product!.nutriments != null) ...[
+                              const SizedBox(height: 16),
+                              Text(
+                                'Nutrition (per 100g):',
+                                style: Theme.of(context).textTheme.titleMedium,
+                              ),
+                              Text(
+                                'Energy: ${value.product!.nutriments!.getValue(Nutrient.energyKCal, PerSize.oneHundredGrams) ?? "N/A"} kcal',
+                              ),
+                              Text(
+                                'Fat: ${value.product!.nutriments!.getValue(Nutrient.fat, PerSize.oneHundredGrams) ?? "N/A"} g',
+                              ),
+                              Text(
+                                'Carbs: ${value.product!.nutriments!.getValue(Nutrient.carbohydrates, PerSize.oneHundredGrams) ?? "N/A"} g',
+                              ),
+                              Text(
+                                'Proteins: ${value.product!.nutriments!.getValue(Nutrient.proteins, PerSize.oneHundredGrams) ?? "N/A"} g',
+                              ),
+                              Text(
+                                'Salt: ${value.product!.nutriments!.getValue(Nutrient.salt, PerSize.oneHundredGrams) ?? "N/A"} g',
+                              ),
+                            ],
+                          ],
+                        ),
+                      )
+                    : const Center(
+                        child: Text('Enter a barcode to search for a product'),
+                      ),
+                AsyncError(:final error) => Center(
+                    child: Text('Error: $error'),
+                  ),
+                _ => const Center(child: CircularProgressIndicator()),
+              },
             ),
           ],
         ),
